@@ -4,7 +4,8 @@ from fastapi.staticfiles import StaticFiles
 from sqlalchemy.orm import Session
 from typing import Optional, List
 import models, schemas, crud
-from database import SessionLocal, engine
+from routers import auth_routes
+from database import SessionLocal, engine, get_db
 import shutil, os
 
 models.Base.metadata.create_all(bind=engine)
@@ -13,6 +14,8 @@ RESUME_DIR = "resumes"
 os.makedirs(RESUME_DIR, exist_ok=True)
 
 app = FastAPI(title="Job Application Tracker API", version="1.0.0")
+
+app.include_router(auth_routes.router)
 
 app.add_middleware(
     CORSMiddleware,
@@ -24,12 +27,6 @@ app.add_middleware(
 
 app.mount("/resumes", StaticFiles(directory=RESUME_DIR), name="resumes")
 
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
 
 # ─── Applications ────────────────────────────────────────────
 
